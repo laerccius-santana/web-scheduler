@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup Label="Build">
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <!-- Used to store connection strings and other sensitive settings, so you don't have to check them into your source
          control provider. Only use this in Development, it is not intended for Production use.
          See http://docs.asp.net/en/latest/security/app-secrets.html -->
@@ -31,31 +31,26 @@
   <ItemGroup Label="Package References">
     <PackageReference Include="Boxed.AspNetCore" Version="8.1.2+build.669" />
     <PackageReference Include="Cronos" Version="0.7.1" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Orleans.Clustering.AdoNet" Version="3.6.5" />
-    <PackageReference Include="Microsoft.Orleans.Persistence.AdoNet" Version="3.6.5" />
-    <PackageReference Include="Microsoft.Orleans.Reminders.AdoNet" Version="3.6.5" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.4" />
+    <PackageReference Include="Microsoft.Orleans.Clustering.AdoNet" Version="9.1.2" />
+    <PackageReference Include="Microsoft.Orleans.Persistence.AdoNet" Version="9.1.2" />
+    <PackageReference Include="Microsoft.Orleans.Reminders.AdoNet" Version="9.1.2" />
     <PackageReference Include="MySqlConnector" Version="2.2.6" />
-    <PackageReference Include="Orleans.StorageProviderInterceptors" Version="0.0.6" />
     <PackageReference Include="OrleansDashboard" Version="3.6.2" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Orleans.CodeGenerator.MSBuild" PrivateAssets="all" Version="3.7.1">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Orleans.Connections.Security" Version="3.6.5" />
-    <PackageReference Include="Microsoft.Orleans.OrleansTelemetryConsumers.Counters" Version="3.7.1" />
-    <PackageReference Include="Microsoft.Orleans.OrleansTelemetryConsumers.Linux" Version="3.7.1" />
-    <PackageReference Include="Microsoft.Orleans.Server" Version="3.6.5" />
-    <PackageReference Include="Microsoft.Orleans.Transactions" Version="3.6.5" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="9.0.4" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.4" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.4" />
+    <PackageReference Include="Microsoft.Orleans.Connections.Security" Version="9.1.2" />
+    <PackageReference Include="Microsoft.Orleans.OrleansTelemetryConsumers.Counters" Version="3.7.2" />
+    <PackageReference Include="Microsoft.Orleans.Server" Version="9.1.2" />
+    <PackageReference Include="Microsoft.Orleans.Transactions" Version="9.1.2" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.18.1" />
-    <PackageReference Include="Serilog" Version="2.12.0" />
-    <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
-    <PackageReference Include="Serilog.Enrichers.Environment" Version="2.2.0" />
-    <PackageReference Include="Serilog.Enrichers.Process" Version="2.0.2" />
+    <PackageReference Include="Serilog" Version="4.2.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+    <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
+    <PackageReference Include="Serilog.Enrichers.Process" Version="3.0.0" />
     <PackageReference Include="Serilog.Enrichers.Span" Version="3.1.0" />
-    <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
+    <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
     <PackageReference Include="Serilog.Exceptions" Version="8.4.0" />
     <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.4.0" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.4.0" />

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup Label="Build">
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <DefineConstants>$(DefineConstants);</DefineConstants>
     <IsTrimmable Condition="'$(IsTrimmable)' == 'true'">true</IsTrimmable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -39,18 +39,8 @@
 
   <ItemGroup Label="Package References">
     <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="all" Version="1.1.1" Condition="'$(GitHub)' == 'true'" />
-
-    <PackageReference Include="Microsoft.Orleans.CodeGenerator.MSBuild" PrivateAssets="all" Version="3.7.1">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Orleans.Core.Abstractions" Version="3.6.5" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
-    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.3.4">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
-
-
+    <PackageReference Include="Microsoft.Orleans.Server" Version="9.1.2" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
   </ItemGroup>
 
   <ItemGroup>
