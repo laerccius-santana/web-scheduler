@@ -7,6 +7,7 @@ using Orleans;
 using Orleans.Configuration;
 using Orleans.Hosting;
 using Orleans.Runtime;
+using Orleans;
 using Orleans.Statistics;
 using WebScheduler.Server.Options;
 using Serilog;
@@ -21,6 +22,8 @@ using WebScheduler.Grains.Scheduler;
 using WebScheduler.Abstractions.Grains.Scheduler;
 using WebScheduler.Grains.Constants;
 using WebScheduler.Abstractions.Grains.History;
+using Orleans.Serialization;
+
 
 public class Program
 {
@@ -82,8 +85,9 @@ public class Program
         Microsoft.Extensions.Hosting.HostBuilderContext context,
         ISiloBuilder siloBuilder) =>
         siloBuilder
+        //.AddActivityPropagation()
             .ConfigureServices(
-                (context, services) =>
+                services =>
                 {
                     _ = services.ConfigureAndValidateSingleton<ApplicationOptions>(context.Configuration);
                     _ = services.ConfigureAndValidateSingleton<ClusterMembershipOptions>(context.Configuration.GetSection(nameof(ApplicationOptions.ClusterMembership)));
@@ -95,92 +99,65 @@ public class Program
                 options.DefaultCompatibilityStrategy = nameof(BackwardCompatible);
                 options.DefaultVersionSelectorStrategy = nameof(AllCompatibleVersions);
             })
-            .UseSiloUnobservedExceptionsHandler()
-            .UseAdoNetClustering(options =>
-                {
-                    options.Invariant = GetStorageOptions(context.Configuration).Invariant;
-                    options.ConnectionString = GetStorageOptions(context.Configuration).ConnectionString;
-                })
+            .UseDashboard(options => GetOrleansDashboardOptions(context.Configuration).Bind(options))
+            
+            //.AddActivityPropagation()
+            //TODO: never find this method before, check how to deal with it
+            //.UseSiloUnobservedExceptionsHandler()
+            .UseAdoNetClustering(options =>options.Bind(GetStorageOptions(context.Configuration)))
             .ConfigureEndpoints(
                 EndpointOptions.DEFAULT_SILO_PORT,
                 EndpointOptions.DEFAULT_GATEWAY_PORT,
                 listenOnAnyHostAddress: !context.HostingEnvironment.IsDevelopment())
-                    .ConfigureApplicationParts(parts =>
-                        parts.AddApplicationPart(typeof(LocalHealthCheckGrain).Assembly).WithReferences()
-                        .AddApplicationPart(typeof(ScheduledTaskGrain).Assembly).WithReferences()
-                        .AddFromApplicationBaseDirectory().WithReferences())
-            .AddStorageInterceptors()
-            .AddAdoNetGrainStorageAsDefault(options =>
-                {
-                    options.Invariant = GetStorageOptions(context.Configuration).Invariant;
-                    options.ConnectionString = GetStorageOptions(context.Configuration).ConnectionString;
-                    options.ConfigureJsonSerializerSettings = ConfigureJsonSerializerSettings;
-                    options.UseJsonFormat = true;
-                })
-            .AddAdoNetGrainStorage(GrainStorageProviderName.ScheduledTaskState, options =>
-                {
-                    options.Invariant = GetStorageOptions(context.Configuration).Invariant;
-                    options.ConnectionString = GetStorageOptions(context.Configuration).ConnectionString;
-                    options.ConfigureJsonSerializerSettings = ConfigureJsonSerializerSettings;
-                    options.UseJsonFormat = true;
-                })
-            .UseGenericStorageInterceptor<ScheduledTaskState>(GrainStorageProviderName.ScheduledTaskState, StateName.ScheduledTaskState, o =>
-            {
-                o.OnBeforeWriteStateFunc = (grainActivationContext, currentState) => new((false, (object?)null));
-                o.OnAfterWriteStateFunc = (grainActivationContext, currentState, sharedState) => ValueTask.CompletedTask;
+                .Services.AddSerializer(builder => builder.AddJsonSerializer(type=> type.Namespace.Contains("WebScheduler.Abstractions") ))
+            //.AddStorageInterceptors()
+             .AddAdoNetGrainStorageAsDefault( options => options.Bind(GetStorageOptions(context.Configuration)))
+            .AddAdoNetGrainStorage(GrainStorageProviderName.ScheduledTaskState, options =>  options.Bind(GetStorageOptions(context.Configuration)))
+           //TODO: Check how to do it in orleans 9
+            // .UseGenericStorageInterceptor<ScheduledTaskState>(GrainStorageProviderName.ScheduledTaskState, StateName.ScheduledTaskState, o =>
+            // {
+            //     o.OnBeforeWriteStateFunc = (grainActivationContext, currentState) => new((false, (object?)null));
+            //     o.OnAfterWriteStateFunc = (grainActivationContext, currentState, sharedState) => ValueTask.CompletedTask;
 
-                o.OnBeforeClearStateAsync = (grainActivationContext, currentState) => new((false, (object?)null));
-                o.OnAfterClearStateAsync = (grainActivationContext, currentState, sharedState) => ValueTask.CompletedTask;
+            //     o.OnBeforeClearStateAsync = (grainActivationContext, currentState) => new((false, (object?)null));
+            //     o.OnAfterClearStateAsync = (grainActivationContext, currentState, sharedState) => ValueTask.CompletedTask;
 
-                o.OnBeforeReadStateAsync = (grainActivationContext, currentState) => new((false, (object?)null));
-                o.OnAfterReadStateFunc = (grainActivationContext, currentState, sharedState) => ValueTask.CompletedTask;
-            }) // simulate non-op
-            .AddAdoNetGrainStorage(GrainStorageProviderName.ScheduledTaskMetadataHistory, options =>
-                {
-                    options.Invariant = GetStorageOptions(context.Configuration).Invariant;
-                    options.ConnectionString = GetStorageOptions(context.Configuration).ConnectionString;
-                    options.ConfigureJsonSerializerSettings = ConfigureJsonSerializerSettings;
-                    options.UseJsonFormat = true;
-                })
-            .UseGenericStorageInterceptor<HistoryState<ScheduledTaskMetadata, ScheduledTaskOperationType>>(GrainStorageProviderName.ScheduledTaskMetadataHistory, StateName.ScheduledTaskMetadataHistory, o =>
-            {
-                o.OnBeforeWriteStateFunc = (grainActivationContext, currentState) => new((false, (object?)null));
-                o.OnAfterWriteStateFunc = (grainActivationContext, currentState, sharedState) => ValueTask.CompletedTask;
+            //     o.OnBeforeReadStateAsync = (grainActivationContext, currentState) => new((false, (object?)null));
+            //     o.OnAfterReadStateFunc = (grainActivationContext, currentState, sharedState) => ValueTask.CompletedTask;
+            // }) // simulate non-op
+            .AddAdoNetGrainStorage(GrainStorageProviderName.ScheduledTaskMetadataHistory, options =>  options.Bind(GetStorageOptions(context.Configuration)))
+                //TODO: Check how to do it in orleans 9
+            // .UseGenericStorageInterceptor<HistoryState<ScheduledTaskMetadata, ScheduledTaskOperationType>>(GrainStorageProviderName.ScheduledTaskMetadataHistory, StateName.ScheduledTaskMetadataHistory, o =>
+            // {
+            //     o.OnBeforeWriteStateFunc = (grainActivationContext, currentState) => new((false, (object?)null));
+            //     o.OnAfterWriteStateFunc = (grainActivationContext, currentState, sharedState) => ValueTask.CompletedTask;
 
-                o.OnBeforeClearStateAsync = (grainActivationContext, currentState) => new((false, (object?)null));
-                o.OnAfterClearStateAsync = (grainActivationContext, currentState, sharedState) => ValueTask.CompletedTask;
+            //     o.OnBeforeClearStateAsync = (grainActivationContext, currentState) => new((false, (object?)null));
+            //     o.OnAfterClearStateAsync = (grainActivationContext, currentState, sharedState) => ValueTask.CompletedTask;
 
-                o.OnBeforeReadStateAsync = (grainActivationContext, currentState) => new((false, (object?)null));
-                o.OnAfterReadStateFunc = (grainActivationContext, currentState, sharedState) => ValueTask.CompletedTask;
-            }) // simulate non-op
+            //     o.OnBeforeReadStateAsync = (grainActivationContext, currentState) => new((false, (object?)null));
+            //     o.OnAfterReadStateFunc = (grainActivationContext, currentState, sharedState) => ValueTask.CompletedTask;
+            // }) // simulate non-op
 
-            .AddAdoNetGrainStorage(GrainStorageProviderName.ScheduledTaskTriggerHistory, options =>
-            {
-                options.Invariant = GetStorageOptions(context.Configuration).Invariant;
-                options.ConnectionString = GetStorageOptions(context.Configuration).ConnectionString;
-                options.ConfigureJsonSerializerSettings = ConfigureJsonSerializerSettings;
-                options.UseJsonFormat = true;
-            })
-            .UseGenericStorageInterceptor<HistoryState<ScheduledTaskTriggerHistory, TaskTriggerType>>(StateName.ScheduledTaskTriggerHistory, GrainStorageProviderName.ScheduledTaskTriggerHistory, o =>
-            {
-                o.OnBeforeWriteStateFunc = (grainActivationContext, currentState) => new((false, (object?)null));
-                o.OnAfterWriteStateFunc = (grainActivationContext, currentState, sharedState) => ValueTask.CompletedTask;
+            .AddAdoNetGrainStorage(GrainStorageProviderName.ScheduledTaskTriggerHistory, options => options.Bind(GetStorageOptions(context.Configuration)))
+            //TODO: Check how to do it in orleans 9
+            // .UseGenericStorageInterceptor<HistoryState<ScheduledTaskTriggerHistory, TaskTriggerType>>(StateName.ScheduledTaskTriggerHistory, GrainStorageProviderName.ScheduledTaskTriggerHistory, o =>
+            // {
+            //     o.OnBeforeWriteStateFunc = (grainActivationContext, currentState) => new((false, (object?)null));
+            //     o.OnAfterWriteStateFunc = (grainActivationContext, currentState, sharedState) => ValueTask.CompletedTask;
 
-                o.OnBeforeClearStateAsync = (grainActivationContext, currentState) => new((false, (object?)null));
-                o.OnAfterClearStateAsync = (grainActivationContext, currentState, sharedState) => ValueTask.CompletedTask;
+            //     o.OnBeforeClearStateAsync = (grainActivationContext, currentState) => new((false, (object?)null));
+            //     o.OnAfterClearStateAsync = (grainActivationContext, currentState, sharedState) => ValueTask.CompletedTask;
 
-                o.OnBeforeReadStateAsync = (grainActivationContext, currentState) => new((false, (object?)null));
-                o.OnAfterReadStateFunc = (grainActivationContext, currentState, sharedState) => ValueTask.CompletedTask;
-            }) // simulate non-op
-            .UseAdoNetReminderService(options =>
-                {
-                    options.Invariant = GetStorageOptions(context.Configuration).Invariant;
-                    options.ConnectionString = GetStorageOptions(context.Configuration).ConnectionString;
-                })
-            .UseIf(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), x => x.UseLinuxEnvironmentStatistics())
-            .UseIf(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), x => x.UsePerfCounterEnvironmentStatistics())
-            .AddActivityPropagation()
-            .UseDashboard(options => options.BasePath = GetOrleansDashboardOptions(context.Configuration).BasePath);
+            //     o.OnBeforeReadStateAsync = (grainActivationContext, currentState) => new((false, (object?)null));
+            //     o.OnAfterReadStateFunc = (grainActivationContext, currentState, sharedState) => ValueTask.CompletedTask;
+            // }) // simulate non-op
+            .UseAdoNetReminderService(options => options.Bind(GetStorageOptions(context.Configuration)))
+            //TODO: Is there need for this in orleans 9?
+            // .UseIf(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), x => x.UseLinuxEnvironmentStatistics())
+            // .UseIf(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), x => x.UsePerfCounterEnvironmentStatistics())
+            //
+            ;
 
     private static void ConfigureWebHostBuilder(IWebHostBuilder webHostBuilder) =>
         webHostBuilder
@@ -227,9 +204,9 @@ public class Program
         jsonSerializerSettings.DateParseHandling = DateParseHandling.DateTimeOffset;
     }
 
-    private static StorageOptions GetStorageOptions(IConfiguration configuration) =>
-        configuration.GetSection(nameof(ApplicationOptions.Storage)).Get<StorageOptions>();
+    private static IConfigurationSection GetStorageOptions(IConfiguration configuration) =>
+        configuration.GetSection(nameof(ApplicationOptions.Storage));
 
-    private static OrleansDashboard.DashboardOptions GetOrleansDashboardOptions(IConfiguration configuration) =>
-        configuration.GetSection(nameof(ApplicationOptions.OrleansDashboard)).Get<OrleansDashboard.DashboardOptions>();
+    private static IConfigurationSection GetOrleansDashboardOptions(IConfiguration configuration) =>
+        configuration.GetSection(nameof(ApplicationOptions.OrleansDashboard));
 }

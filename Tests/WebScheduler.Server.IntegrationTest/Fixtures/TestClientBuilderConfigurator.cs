@@ -8,5 +8,5 @@ using Orleans.TestingHost;
 public class TestClientBuilderConfigurator : IClientBuilderConfigurator
 {
     public void Configure(IConfiguration configuration, IClientBuilder clientBuilder) =>
-        clientBuilder.AddSimpleMessageStreamProvider(Constants.StreamProviderName.Default);
+        clientBuilder.AddMemoryStreams(Constants.StreamProviderName.Default);
 }

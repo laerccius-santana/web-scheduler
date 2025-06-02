@@ -36,12 +36,13 @@
     <PackageReference Include="Microsoft.Orleans.Persistence.AdoNet" Version="9.1.2" />
     <PackageReference Include="Microsoft.Orleans.Reminders.AdoNet" Version="9.1.2" />
     <PackageReference Include="MySqlConnector" Version="2.2.6" />
-    <PackageReference Include="OrleansDashboard" Version="3.6.2" />
+    <PackageReference Include="OrleansDashboard" Version="8.2.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="9.0.4" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.4" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.4" />
     <PackageReference Include="Microsoft.Orleans.Connections.Security" Version="9.1.2" />
-    <PackageReference Include="Microsoft.Orleans.OrleansTelemetryConsumers.Counters" Version="3.7.2" />
+    <!-- <PackageReference Include="Microsoft.Orleans.OrleansTelemetryConsumers.Counters" Version="3.7.2" /> -->
+    <PackageReference Include="Microsoft.Orleans.Serialization.SystemTextJson" Version="9.1.2"/>
     <PackageReference Include="Microsoft.Orleans.Server" Version="9.1.2" />
     <PackageReference Include="Microsoft.Orleans.Transactions" Version="9.1.2" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.18.1" />

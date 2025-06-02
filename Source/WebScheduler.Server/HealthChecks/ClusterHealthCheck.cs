@@ -29,7 +29,8 @@ public class ClusterHealthCheck : IHealthCheck
         try
         {
             var hosts = await manager.GetHosts();
-            var count = hosts.Values.Count(x => x.IsUnavailable());
+            //TODO: check if that is the right validation
+            var count = hosts.Values.Count(x => !x.IsTerminating());
             return count > 0 ? HealthCheckResult.Degraded(count + DegradedMessage) : HealthCheckResult.Healthy();
         }
         catch (Exception exception)

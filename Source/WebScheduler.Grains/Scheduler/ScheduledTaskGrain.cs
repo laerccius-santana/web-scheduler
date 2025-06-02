@@ -26,6 +26,7 @@ using Orleans.StorageProviderInterceptors.Abstractions;
 /// </summary>
 public class ScheduledTaskGrain : Grain, IScheduledTaskGrain, IRemindable, ITenantScopedGrain<IScheduledTaskGrain>, IIncomingGrainCallFilter
 {
+
     private readonly IExceptionObserver exceptionObserver;
     private readonly ILogger<ScheduledTaskGrain> logger;
     private readonly IPersistentState<ScheduledTaskState> taskState;
@@ -505,7 +506,7 @@ public class ScheduledTaskGrain : Grain, IScheduledTaskGrain, IRemindable, ITena
     }
 
     /// <inheritdoc/>
-    public override async Task OnActivateAsync()
+    public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
         this.MigrateGuidTenantIdToTenantIdString();
 
@@ -518,7 +519,7 @@ public class ScheduledTaskGrain : Grain, IScheduledTaskGrain, IRemindable, ITena
 
         _ = await this.TryToInitializeReminder();
 
-        await base.OnActivateAsync();
+        await base.OnActivateAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
